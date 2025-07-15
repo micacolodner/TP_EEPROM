@@ -34,12 +34,11 @@ int bot1;
 int bot2;
 
 //variables globales
-float VU = 24.0; //valor umbral
+float VU = 0.0; //valor umbral
 int estadoActual = PANTALLA1;
-unsigned long contando = 0;
 
-Preferences VU_eeprom;
 
+Preferences VU_eeprom; //defino la variable q va a ir cambiando todo el tiempo
 
 
 void setup() {
@@ -50,8 +49,8 @@ void setup() {
 
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
 
-  VU_eeprom.begin("valor-VU", true);
-  VU = VU_eeprom.getFloat("umbral", 0);
+  VU_eeprom.begin("valor-VU", true); //inicializa
+  VU = VU_eeprom.getFloat("umbral", 0); // toma el VU y le dice al eproom q tome el valor del VU
   Serial.print("Umbral guardado: ");
   Serial.println(VU);
   VU_eeprom.end();
@@ -133,7 +132,8 @@ void loop() {
         VU_eeprom.end();
         Serial.print("nuevo umbral: ");
         Serial.println(VU);
-        estadoActual = GUARDADO;  
+        estadoActual = GUARDADO;
+        contando = millis();
       } else if ((millis() - contando) <= 5000 && bot2 == HIGH) {
           estadoActual = RESTA;
       }
