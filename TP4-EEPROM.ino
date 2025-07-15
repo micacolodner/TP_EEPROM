@@ -34,12 +34,11 @@ int bot1;
 int bot2;
 
 //variables globales
-float VU = 24.0; //valor umbral
+float VU = 0.0; //valor umbral
 int estadoActual = PANTALLA1;
 unsigned long contando = 0;
 
 Preferences VU_eeprom;
-
 
 
 void setup() {
@@ -53,8 +52,6 @@ void setup() {
 
   VU_eeprom.begin("valor-VU", true);
   VU = VU_eeprom.getFloat("umbral", 0);
-  Serial.print("Umbral guardado: ");
-  Serial.println(VU);
   VU_eeprom.end();
 }
 
@@ -127,11 +124,9 @@ void loop() {
       Serial.println(contando);
       if (((millis() - contando) >= 5000) && (bot2 == HIGH)) {
         contando = 0;
-        VU_eeprom.begin("valor-VU", false);
+        VU_eeprom.begin("valor-VU", false); //lo habilita para escribir
         VU_eeprom.putFloat("umbral", VU); //creo un dato que se llame umbral y le asigno el valor VU
         VU_eeprom.end();
-        Serial.print("nuevo umbral: ");
-        Serial.println(VU);
 
         contando = millis();
         estadoActual = GUARDADO;  
@@ -172,4 +167,4 @@ void loop() {
       }
       break;
   }   
-}
+}                                                                                                                     
