@@ -1,6 +1,3 @@
-//GRUPO 2 5MB
-//COLODNER, BOCCI, TOLEDO, BRAVAR 
-
 #include <WiFi.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
@@ -28,29 +25,31 @@ Adafruit_SSD1306 display(LONGITUD, ALTURA, &Wire, -1);
 DHT dht(DHTPIN, DHTTYPE);
 
 //defino pines
-#define SW1 34
+#define SW1 35
 int bot1;
-#define SW2 35
+#define SW2 34
 int bot2;
 
 //variables globales
-float VU = 0.0; //valor umbral
+float VU = 24.0; //valor umbral
 int estadoActual = PANTALLA1;
+unsigned long contando = 0;
 
+Preferences VU_eeprom;
 
-Preferences VU_eeprom; //defino la variable q va a ir cambiando todo el tiempo
 
 
 void setup() {
   Serial.begin(115200);
+  Serial.print("iniciado");
   pinMode(SW1, INPUT);
   pinMode(SW2, INPUT);
   dht.begin();
 
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
 
-  VU_eeprom.begin("valor-VU", true); //inicializa
-  VU = VU_eeprom.getFloat("umbral", 0); // toma el VU y le dice al eproom q tome el valor del VU
+  VU_eeprom.begin("valor-VU", true);
+  VU = VU_eeprom.getFloat("umbral", 0);
   Serial.print("Umbral guardado: ");
   Serial.println(VU);
   VU_eeprom.end();
@@ -66,6 +65,7 @@ void loop() {
 
   switch (estadoActual) {
     case PANTALLA1:
+      Serial.println("PANTALLA 1");
       display.clearDisplay();
       display.setTextSize(2);
       display.setTextColor(SSD1306_WHITE);
@@ -89,25 +89,22 @@ void loop() {
       break;
 
     case CONFIRM_PANTALLA1:
-
+        
+      Serial.println("confirm 1");
       if ((millis() - contando) >= 5000 && bot1 == HIGH) {
         contando = 0;
         estadoActual = PANTALLA2;
       }
-      else {
-        estadoActual = PANTALLA1;
-      }
       break;
-    
-    case PANTALLA2:
 
+    case PANTALLA2:
+      Serial.println("pantalla 2");
       display.clearDisplay();
       display.setTextSize(2);
       display.setTextColor(SSD1306_WHITE);
 
       display.setCursor(0, 10);
-      display.println("NUEVO UMBRAL: ");
-      display.setCursor(60, 10);
+      display.println("NUEVO VU: ");
       display.print(VU);
       
       display.display();
@@ -124,22 +121,26 @@ void loop() {
       break;
     
     case CONFIRM_PANTALLA2:
-
-      if ((millis() - contando) >= 5000 && bot2 == HIGH) {
+      Serial.println(contando);
+      if (((millis() - contando) >= 5000) && (bot2 == HIGH)) {
         contando = 0;
         VU_eeprom.begin("valor-VU", false);
-        VU_eeprom.putFloat("umbral", VU);
+        VU_eeprom.putFloat("umbral", VU); //creo un dato que se llame umbral y le asigno el valor VU
         VU_eeprom.end();
         Serial.print("nuevo umbral: ");
         Serial.println(VU);
-        estadoActual = GUARDADO;
+
         contando = millis();
-      } else if ((millis() - contando) <= 5000 && bot2 == HIGH) {
-          estadoActual = RESTA;
+        estadoActual = GUARDADO;  
+      }
+      else if (((millis() - contando) <= 5000) && (bot2 == HIGH)) {
+          contando = 0;
+          estadoActual = RESTA; 
       }
       break;
 
       case GUARDADO:
+      Serial.println("guardado");
         display.clearDisplay();
         display.setTextSize(2);
         display.setTextColor(SSD1306_WHITE);
@@ -147,13 +148,13 @@ void loop() {
         display.println("GUARDADO");
         display.display();
 
-        if ((millis() - contando) >= 2000) {
+        if ((millis() - contando) >= 1000) {
           estadoActual = PANTALLA1;
         }
         break;
 
     case SUMA:
-
+      Serial.println("suma");
       if (bot1 == HIGH) {
         VU += 1;
         estadoActual = PANTALLA2;
@@ -161,10 +162,11 @@ void loop() {
       break;
 
     case RESTA:
-
+      Serial.println("resta");
       if (bot2 == HIGH) {
         VU -= 1;
         estadoActual = PANTALLA2;
       }
       break;
-  }
+  }   
+}
