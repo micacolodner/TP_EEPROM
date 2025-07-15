@@ -40,9 +40,6 @@ unsigned long contando = 0;
 
 Preferences VU_eeprom;
 
-Preferences preferences;
-
-
 
 
 void setup() {
