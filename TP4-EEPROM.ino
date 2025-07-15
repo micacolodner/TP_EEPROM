@@ -1,3 +1,6 @@
+//COLODNER, BOCCI, TOLEDO, BRAVAR
+//GRUPO 2 5MB
+
 #include <WiFi.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
